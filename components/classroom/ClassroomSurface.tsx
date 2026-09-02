@@ -105,10 +105,16 @@ export function ClassroomSurface({
     async (isEffectCurrent: () => boolean): Promise<ClassroomLoadOutcome> => {
       const loadToken = claimStageSceneLoadToken();
       const isCurrent = () => isEffectCurrent() && isCurrentStageSceneLoadToken(loadToken);
+      // Only the full page owns the address bar; a workspace pane must not read it.
+      const forceServerRefresh =
+        variant === 'page' &&
+        typeof window !== 'undefined' &&
+        new URLSearchParams(window.location.search).get('refresh') === 'server';
 
       try {
         const loadResult = await runClassroomLoad({
           classroomId,
+          forceServerRefresh,
           loadToken,
           isCurrent,
           loadFromStorage,
@@ -135,6 +141,9 @@ export function ClassroomSurface({
           log,
         });
         if (!isCurrent()) return 'cancelled';
+        if (forceServerRefresh && useStageStore.getState().stage?.id === classroomId) {
+          window.history.replaceState(window.history.state, '', window.location.pathname);
+        }
 
         // Positive absence only: the course is gone, invalid, or never
         // existed. Other failures stay on the error/retry path so we never

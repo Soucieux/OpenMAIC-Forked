@@ -81,6 +81,8 @@ interface AgentLookupResult {
 
 export interface RunClassroomLoadArgs<TMediaTasks = unknown> {
   classroomId: string;
+  /** Explicit one-time restore: replace an existing IndexedDB copy with the server classroom. */
+  forceServerRefresh?: boolean;
   loadToken: StageSceneLoadToken;
   isCurrent: () => boolean;
   loadFromStorage: (classroomId: string, loadToken: StageSceneLoadToken) => Promise<void>;
@@ -136,6 +138,7 @@ export function resetLegacyAgentFallbackProbes(): void {
 
 export async function runClassroomLoad<TMediaTasks = unknown>({
   classroomId,
+  forceServerRefresh = false,
   loadToken,
   isCurrent,
   loadFromStorage,
@@ -159,8 +162,13 @@ export async function runClassroomLoad<TMediaTasks = unknown>({
     await loadFromStorage(classroomId, loadToken);
     if (!isCurrent()) return { outcome: 'cancelled' };
 
-    if (!getCurrentStage()) {
-      log.info('No IndexedDB data, trying server-side storage for:', classroomId);
+    if (forceServerRefresh || !getCurrentStage()) {
+      log.info(
+        forceServerRefresh
+          ? 'Explicit server refresh requested for:'
+          : 'No IndexedDB data, trying server-side storage for:',
+        classroomId,
+      );
       // The fetch path converts and commits under the per-stage document lock.
       // Once it returns, the document owns every allocation; a later
       // navigation may discard only this in-memory apply, never the durable

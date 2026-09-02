@@ -163,6 +163,31 @@ beforeEach(() => {
 });
 
 describe('runClassroomLoad', () => {
+  it('replaces an existing IndexedDB classroom when an explicit server refresh is requested', async () => {
+    const localStage = makeStage('stage-a');
+    const serverStage = { ...makeStage('stage-a'), name: 'Server version' };
+    const serverScene = makeScene('scene-server', 'stage-a');
+    const { deps, setStage } = makeDeps({
+      forceServerRefresh: true,
+      fetchClassroom: vi.fn().mockResolvedValue({
+        outcome: 'found',
+        classroom: { stage: serverStage, scenes: [serverScene] },
+      }),
+      applyFallbackScenes: vi.fn().mockResolvedValue(true),
+    });
+    setStage(localStage);
+
+    await runClassroomLoad(deps);
+
+    expect(deps.loadFromStorage).toHaveBeenCalledExactlyOnceWith('stage-a', 1);
+    expect(deps.fetchClassroom).toHaveBeenCalledExactlyOnceWith('stage-a', deps.isCurrent);
+    expect(deps.applyFallbackScenes).toHaveBeenCalledWith({
+      loadToken: 1,
+      stage: serverStage,
+      scenes: [serverScene],
+    });
+  });
+
   it('keeps the current load token valid when fallback scenes are committed', () => {
     useStageStore.getState().clearStore();
     const loadToken = claimStageSceneLoadToken();
