@@ -74,7 +74,25 @@ Canvas-based simulations for physics, chemistry, biology, engineering.
 - Proper state management: Reset button MUST return to initial state
 - Touch-friendly: 44px minimum touch targets
 
-### 2. Interactive Diagram (`diagram`)
+### 2. Configurator Widget (`configurator`)
+Form-based builders for assembling a useful artifact from learner choices and text.
+
+**Best for:**
+- Prompt builders and content composers
+- Planners, selectors, and configuration tools
+- Guided forms that produce a complete preview or result
+
+**Output in widgetOutline:**
+- `concept`: The artifact the learner builds
+- `keyVariables`: Meaningful field names needed to build it
+
+**Design Principles:**
+- Use labeled form controls and a live output preview
+- Use named choices instead of percentage sliders
+- Never require a canvas or simulation controls
+- Stack form and preview without clipping on mobile
+
+### 3. Interactive Diagram (`diagram`)
 Explorable flowcharts, mind maps, system diagrams.
 
 **Best for:**
@@ -94,7 +112,7 @@ Explorable flowcharts, mind maps, system diagrams.
 - Color-code different node types
 - Include animations for node reveal
 
-### 3. Code Playground (`code`)
+### 4. Code Playground (`code`)
 Live code editor with execution and test cases.
 
 **Best for:**
@@ -106,7 +124,7 @@ Live code editor with execution and test cases.
 - `language`: "python" | "javascript" | "typescript" | "java" | "cpp"
 - `challengeType`: Type of coding challenge
 
-### 4. Game Widget (`game`)
+### 5. Game Widget (`game`)
 **IMPORTANT: Create FUN games, NOT boring quizzes!**
 
 **Best for:**
@@ -132,7 +150,7 @@ Live code editor with execution and test cases.
 - Learning happens through PLAY, not through questions
 - Game should be FUN enough to replay
 
-### 5. 3D Visualization (`visualization3d`)
+### 6. 3D Visualization (`visualization3d`)
 Interactive 3D scenes using Three.js for immersive learning experiences.
 
 **Best for:**
@@ -159,6 +177,7 @@ Interactive 3D scenes using Three.js for immersive learning experiences.
 | Content Type | Recommended Widget | Reason |
 |--------------|-------------------|--------|
 | Physics formulas/concepts | simulation | Let students EXPERIMENT with variables |
+| Prompt builders, planners, composers | configurator | Assemble and preview a structured artifact |
 | Step-by-step processes | diagram | Visual walkthrough with reveal |
 | Programming concepts | code | Hands-on coding practice |
 | Practice/challenge | game (action) | FUN gameplay to apply knowledge |

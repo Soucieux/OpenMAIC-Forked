@@ -41,6 +41,7 @@ import {
 } from './prompt-formatters.js';
 import type { PromptId } from './prompts/types.js';
 import { buildPrompt, PROMPT_IDS } from './prompts/index.js';
+import { normalizeConfiguratorConfig, renderConfiguratorHtml } from './configurator-renderer.js';
 import type {
   GeneratedInteractiveContent,
   GeneratedPBLContent,
@@ -172,6 +173,13 @@ function inferWidgetType(subject: string, concept: string, designIdea: string): 
 
   // Rule-based inference
   if (
+    /builder|configurator|composer|planner|planning form|configuration form|prompt generator|content generator|message generator|scenario generator|build a prompt|构建器|配置器|生成器|表单|规划器/.test(
+      text,
+    )
+  ) {
+    return 'configurator';
+  }
+  if (
     /physics|chemistry|力学|化学|运动|反应|force|motion|equilibrium|wave|电路|circuit/.test(text)
   ) {
     return 'simulation';
@@ -209,6 +217,8 @@ function buildWidgetOutline(
       // Try to extract variables from designIdea
       const varMatch = config.designIdea.match(/variables|参数|调整|adjust|slider/i);
       return { ...base, keyVariables: varMatch ? [] : undefined };
+    case 'configurator':
+      return { ...base, keyVariables: [] };
     case 'diagram':
       return { ...base, diagramType: 'flowchart' };
     case 'code':
@@ -1237,6 +1247,17 @@ export async function generateWidgetContent(
       };
       break;
 
+    case 'configurator':
+      promptId = PROMPT_IDS.CONFIGURATOR_CONTENT;
+      variables = {
+        title: outline.title,
+        description: outline.description,
+        keyPoints: (outline.keyPoints || []).join('\n'),
+        fields: widgetOutline.keyVariables?.join(', ') || '',
+        languageDirective: languageDirective || '',
+      };
+      break;
+
     case 'diagram': {
       const prescribedNodes = widgetOutline.nodes ?? [];
       promptId = PROMPT_IDS.DIAGRAM_CONTENT;
@@ -1347,6 +1368,19 @@ export async function generateWidgetContent(
 
   // Extract widget config from HTML if present
   const widgetConfig = extractWidgetConfig(html, widgetType);
+
+  if (widgetType === 'configurator') {
+    const configuratorConfig = normalizeConfiguratorConfig(widgetConfig, {
+      title: outline.title,
+      description: outline.description,
+      fieldNames: widgetOutline.keyVariables,
+    });
+    return {
+      html: renderConfiguratorHtml(configuratorConfig),
+      widgetType,
+      widgetConfig: configuratorConfig,
+    };
+  }
 
   return {
     html: postProcessInteractiveHtml(html),

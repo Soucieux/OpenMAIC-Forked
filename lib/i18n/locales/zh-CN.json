@@ -1113,6 +1113,7 @@
     "quizConfigSummary": "{{count}} 道题",
     "interactiveWidgetKind": "组件类型",
     "widgetSimulation": "仿真模拟",
+    "widgetConfigurator": "配置构建器",
     "widgetDiagram": "图示",
     "widgetCode": "代码",
     "widgetGame": "游戏",

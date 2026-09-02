@@ -3,6 +3,7 @@
 /** Every widget kind produced by the interactive-content pipeline. */
 export type WidgetType =
   | 'simulation'
+  | 'configurator'
   | 'diagram'
   | 'code'
   | 'game'
@@ -12,6 +13,7 @@ export type WidgetType =
 /** Frozen set of every valid {@link WidgetType}. */
 export const WIDGET_TYPES = [
   'simulation',
+  'configurator',
   'diagram',
   'code',
   'game',

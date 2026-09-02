@@ -1113,6 +1113,7 @@
     "quizConfigSummary": "{{count}} preguntas",
     "interactiveWidgetKind": "Tipo de widget",
     "widgetSimulation": "Simulación",
+    "widgetConfigurator": "Configurador",
     "widgetDiagram": "Diagrama",
     "widgetCode": "Código",
     "widgetGame": "Juego",

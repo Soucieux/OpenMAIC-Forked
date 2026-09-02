@@ -1113,6 +1113,7 @@
     "quizConfigSummary": "{{count}} 問",
     "interactiveWidgetKind": "ウィジェットの種類",
     "widgetSimulation": "シミュレーション",
+    "widgetConfigurator": "コンフィギュレーター",
     "widgetDiagram": "ダイアグラム",
     "widgetCode": "コード",
     "widgetGame": "ゲーム",

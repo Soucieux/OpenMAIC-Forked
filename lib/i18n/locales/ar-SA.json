@@ -1113,6 +1113,7 @@
     "quizConfigSummary": "{{count}} أسئلة",
     "interactiveWidgetKind": "نوع العنصر التفاعلي",
     "widgetSimulation": "محاكاة",
+    "widgetConfigurator": "أداة إعداد",
     "widgetDiagram": "مخطط",
     "widgetCode": "شيفرة برمجية",
     "widgetGame": "لعبة",

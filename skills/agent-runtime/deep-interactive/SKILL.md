@@ -26,6 +26,7 @@ learner has nothing to manipulate on it.
 | widgetType        | Use when the learner should…                                     |
 | ----------------- | ---------------------------------------------------------------- |
 | `simulation`      | vary parameters and watch a system respond in real time          |
+| `configurator`    | assemble and preview a prompt, plan or other structured result   |
 | `diagram`         | explore structure, flow or hierarchy by expanding and following  |
 | `code`            | read, modify and run a short program that embodies the idea      |
 | `game`            | make repeated decisions under a rule set and see the score move  |
@@ -38,6 +39,7 @@ an interactive scene with an empty widget outline degrades to a generic page and
 defeats the whole point.
 
 - `simulation`: `concept`, `keyVariables` (the actual sliders/inputs)
+- `configurator`: `concept`, `keyVariables` (the labeled fields and choices)
 - `diagram`: `diagramType`, `nodes` (with `label`, and `parentId` for hierarchy)
 - `code`: `language`, `concept`
 - `game`: `gameType`, `challenge`, `playerControls`

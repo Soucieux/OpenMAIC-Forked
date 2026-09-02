@@ -1135,6 +1135,7 @@ function QuizConfigDisclosure({
 
 const WIDGET_KINDS: ReadonlyArray<readonly [WidgetType, string]> = [
   ['simulation', 'generation.widgetSimulation'],
+  ['configurator', 'generation.widgetConfigurator'],
   ['diagram', 'generation.widgetDiagram'],
   ['code', 'generation.widgetCode'],
   ['game', 'generation.widgetGame'],

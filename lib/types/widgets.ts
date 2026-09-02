@@ -31,6 +31,36 @@ export interface SimulationConfig extends WidgetConfigBase {
   }>;
 }
 
+// ==================== Configurator Widget ====================
+
+export interface ConfiguratorFieldOption {
+  value: string;
+  label: string;
+  description?: string;
+}
+
+export interface ConfiguratorField {
+  name: string;
+  label: string;
+  type: 'text' | 'textarea' | 'select' | 'multiselect' | 'toggle';
+  placeholder?: string;
+  default?: string | string[] | boolean;
+  required?: boolean;
+  options?: ConfiguratorFieldOption[];
+}
+
+export interface ConfiguratorConfig extends WidgetConfigBase {
+  type: 'configurator';
+  title: string;
+  description: string;
+  fields: ConfiguratorField[];
+  presets?: Array<{
+    name: string;
+    values: Record<string, string | string[] | boolean>;
+  }>;
+  outputLabel?: string;
+}
+
 // ==================== Diagram Widget ====================
 
 export interface DiagramNode {
@@ -201,6 +231,7 @@ export interface ProceduralSkillConfig extends WidgetConfigBase {
 
 export type WidgetConfig =
   | SimulationConfig
+  | ConfiguratorConfig
   | DiagramConfig
   | CodeConfig
   | GameConfig

@@ -87,8 +87,9 @@ Never return a bare array. Never omit `languageDirective` or `courseTitle`. All 
 {{#if hasSourceImages}}
 - **If source images are available**, add `suggestedImageIds` to relevant slide scenes. Only use image IDs listed under Available Images.
 {{/if}}
-- **Interactive scenes**: If a concept benefits from hands-on simulation/visualization, use `"type": "interactive"` with `widgetType` and `widgetOutline` fields. Limit to 1-2 per course.
-   - Select widgetType based on concept: simulation (physics/chem), diagram (processes), code (programming), game (practice), visualization3d (3D models)
+- **Interactive scenes**: If a concept benefits from hands-on interaction, use `"type": "interactive"` with `widgetType` and `widgetOutline` fields. Limit to 1-2 per course.
+   - Select widgetType based on concept: simulation (physics/chem), configurator (builders/composers/planners), diagram (processes), code (programming), game (practice), visualization3d (3D models)
+   - If the learner builds a prompt, plan, message, scenario, or other structured artifact from choices and text, use `configurator`, not `simulation`
    - Provide appropriate widgetOutline for the widget type
 - **Scene count**: Based on inferred duration, typically 1-2 scenes per minute
 - **Quiz placement**: Recommend inserting a quiz every 3-5 slides for assessment

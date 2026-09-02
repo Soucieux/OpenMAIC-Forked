@@ -20,6 +20,9 @@ import { buildPrompt, PROMPT_IDS } from './prompts/index.js';
 export const DEFAULT_LANGUAGE_DIRECTIVE =
   'Teach in the language that matches the user requirement.';
 
+const CONFIGURATOR_CONCEPT_PATTERN =
+  /builder|configurator|composer|planner|planning form|configuration form|prompt generator|content generator|message generator|scenario generator|构建器|配置器|生成器|表单|规划器/i;
+
 export interface OutlinePromptContext {
   pdfText?: string;
   pdfImages?: PdfImage[];
@@ -168,14 +171,16 @@ export async function generateSceneOutlinesFromRequirements(
       return { success: false, error: 'Failed to parse scene outlines response' };
     }
 
-    const enriched = rawOutlines.map((outline, index) => ({
-      ...outline,
-      id: outline.id || nanoid(),
-      order: index + 1,
-      // LLMs occasionally emit mediaGenerations as a string or object; every
-      // downstream consumer requires an array, so drop non-array values here.
-      ...(Array.isArray(outline.mediaGenerations) ? null : { mediaGenerations: undefined }),
-    }));
+    const enriched = rawOutlines.map((outline, index) =>
+      normalizeConfiguratorOutline({
+        ...outline,
+        id: outline.id || nanoid(),
+        order: index + 1,
+        // LLMs occasionally emit mediaGenerations as a string or object; every
+        // downstream consumer requires an array, so drop non-array values here.
+        ...(Array.isArray(outline.mediaGenerations) ? null : { mediaGenerations: undefined }),
+      }),
+    );
 
     const result = uniquifyMediaElementIds(enriched);
 
@@ -205,32 +210,71 @@ export function sanitizeProceduralSkillOutline(outline: SceneOutline): SceneOutl
   };
 }
 
+/**
+ * Correct builder-like interactive outlines that a model mislabeled as simulations.
+ *
+ * @param outline - Generated outline to normalize.
+ * @returns The original outline or a copy routed to the configurator widget.
+ */
+export function normalizeConfiguratorOutline(outline: SceneOutline): SceneOutline {
+  if (outline.type !== 'interactive' || outline.widgetType !== 'simulation') {
+    return outline;
+  }
+
+  const searchableText = [
+    outline.title,
+    outline.description,
+    ...(outline.keyPoints ?? []),
+    outline.widgetOutline?.concept,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  if (!CONFIGURATOR_CONCEPT_PATTERN.test(searchableText)) {
+    return outline;
+  }
+
+  return {
+    ...outline,
+    widgetType: 'configurator',
+    widgetOutline: {
+      ...outline.widgetOutline,
+      concept: outline.widgetOutline?.concept || outline.title,
+    },
+  };
+}
+
 export function applyOutlineFallbacks(
   outline: SceneOutline,
   hasLanguageModel: boolean,
   options: OutlineFallbackOptions = {},
 ): SceneOutline {
   const logger = options.logger ?? noopGenerationLogger;
-  const hasWidgetConfig = outline.widgetType && outline.widgetOutline;
+  const normalizedOutline = normalizeConfiguratorOutline(outline);
+  const hasWidgetConfig = normalizedOutline.widgetType && normalizedOutline.widgetOutline;
 
-  if (outline.widgetType === 'procedural-skill' && !options.allowProceduralSkill) {
+  if (normalizedOutline.widgetType === 'procedural-skill' && !options.allowProceduralSkill) {
     logger.warn(
-      `Procedural-skill outline "${outline.title}" is not enabled, falling back to diagram`,
+      `Procedural-skill outline "${normalizedOutline.title}" is not enabled, falling back to diagram`,
     );
-    return sanitizeProceduralSkillOutline(outline);
+    return sanitizeProceduralSkillOutline(normalizedOutline);
   }
 
-  if (outline.type === 'interactive' && !outline.interactiveConfig && !hasWidgetConfig) {
+  if (
+    normalizedOutline.type === 'interactive' &&
+    !normalizedOutline.interactiveConfig &&
+    !hasWidgetConfig
+  ) {
     logger.warn(
-      `Interactive outline "${outline.title}" missing interactiveConfig and widget config, falling back to slide`,
+      `Interactive outline "${normalizedOutline.title}" missing interactiveConfig and widget config, falling back to slide`,
     );
-    return { ...outline, type: 'slide' };
+    return { ...normalizedOutline, type: 'slide' };
   }
-  if (outline.type === 'pbl' && (!outline.pblConfig || !hasLanguageModel)) {
+  if (normalizedOutline.type === 'pbl' && (!normalizedOutline.pblConfig || !hasLanguageModel)) {
     logger.warn(
-      `PBL outline "${outline.title}" missing pblConfig or languageModel, falling back to slide`,
+      `PBL outline "${normalizedOutline.title}" missing pblConfig or languageModel, falling back to slide`,
     );
-    return { ...outline, type: 'slide' };
+    return { ...normalizedOutline, type: 'slide' };
   }
-  return outline;
+  return normalizedOutline;
 }

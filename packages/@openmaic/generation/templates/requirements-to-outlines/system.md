@@ -142,11 +142,12 @@ Use `interactive` type when a concept benefits significantly from hands-on inter
 - **Data exploration**: Interactive charts, statistical sampling, regression fitting
 - **Chemistry**: Molecular structure, reaction balancing, pH titration
 - **Programming concepts**: Algorithm visualization, data structure operations
+- **Structured builders**: Prompt builders, planners, composers, and configuration tools
 
 **Constraints**:
 
 - Limit to **1-2 interactive scenes per course** (they are resource-intensive)
-- Interactive scenes **require** an `interactiveConfig` object
+- Interactive scenes **require** both `widgetType` and `widgetOutline`
 - Do NOT use interactive for purely textual/conceptual content - use slides instead
 - The `interactiveConfig.designIdea` should describe the specific interactive elements and user interactions
 
@@ -159,10 +160,13 @@ When generating an interactive scene, you MUST select the appropriate widget typ
 | Concept Characteristics | Widget Type | widgetOutline Fields |
 |-------------------------|-------------|---------------------|
 | Physics/chemistry phenomena with adjustable parameters | `simulation` | `concept`, `keyVariables` |
+| Building a structured artifact from form choices or text | `configurator` | `concept`, `keyVariables` |
 | Processes, workflows, cause-effect chains | `diagram` | `diagramType` |
 | Programming concepts, algorithms | `code` | `language` |
 | Practice activities, gamified assessment | `game` | `gameType`, `challenge` |
 | Biological/geometric structures, 3D models | `visualization3d` | `visualizationType`, `objects` |
+
+If the learner builds a prompt, plan, message, scenario, or other structured artifact from choices and text, select `configurator`. Do not classify that interaction as a `simulation`, even when the output changes live.
 
 **widgetOutline Format by Type:**
 
@@ -171,6 +175,12 @@ When generating an interactive scene, you MUST select the appropriate widget typ
 "widgetOutline": {
   "concept": "concept_name",
   "keyVariables": ["variable1", "variable2"]
+}
+
+// configurator
+"widgetOutline": {
+  "concept": "artifact_to_build",
+  "keyVariables": ["field1", "field2", "field3"]
 }
 
 // diagram
@@ -313,7 +323,7 @@ Rules:
 {{/if}}
 | quizConfig        | object                   | ❌       | Required for quiz type, contains questionCount/difficulty/questionTypes                          |
 | interactiveConfig | object                   | ❌ (deprecated) | Legacy: use widgetType + widgetOutline instead                                                                                       |
-| widgetType        | string                   | ✅ (for interactive) | Widget type: "simulation", "diagram", "code", "game", "visualization3d"                                                 |
+| widgetType        | string                   | ✅ (for interactive) | Widget type: "simulation", "configurator", "diagram", "code", "game", "visualization3d"                                 |
 | widgetOutline     | object                   | ✅ (for interactive) | Widget-specific configuration (see Widget Type Selection)                                                               |
 | pblConfig         | object                   | ❌       | Required for pbl type, contains projectTopic/projectDescription/targetSkills/issueCount/language |
 

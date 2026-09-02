@@ -21,6 +21,7 @@ import {
   formatImagePlaceholder,
   buildVisionUserContent,
   buildOutlinePrompt,
+  normalizeConfiguratorOutline,
   uniquifyMediaElementIds,
   formatTeacherPersonaForPrompt,
 } from '@openmaic/generation';
@@ -222,7 +223,14 @@ function normalizeTaskEngineSlideOutline(outline: SceneOutline): SceneOutline {
   return normalized;
 }
 
-const ORDINARY_WIDGET_TYPES = new Set(['simulation', 'diagram', 'code', 'game', 'visualization3d']);
+const ORDINARY_WIDGET_TYPES = new Set([
+  'simulation',
+  'configurator',
+  'diagram',
+  'code',
+  'game',
+  'visualization3d',
+]);
 
 function normalizeTaskEngineOutline(outline: SceneOutline, requirement: string): SceneOutline {
   if (outline.type === 'slide') {
@@ -587,7 +595,10 @@ export async function POST(req: NextRequest) {
                   const normalized = taskEngineMode
                     ? normalizeTaskEngineOutline(enrichedBase, requirements.requirement)
                     : sanitizeNonTaskEngineOutline(enrichedBase);
-                  const enriched = ensureUniqueOutlineId(normalized, usedOutlineIds);
+                  const enriched = ensureUniqueOutlineId(
+                    normalizeConfiguratorOutline(normalized),
+                    usedOutlineIds,
+                  );
                   parsedOutlines.push(enriched);
 
                   const event = JSON.stringify({

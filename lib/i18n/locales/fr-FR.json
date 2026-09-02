@@ -1113,6 +1113,7 @@
     "quizConfigSummary": "{{count}} questions",
     "interactiveWidgetKind": "Type de module",
     "widgetSimulation": "Simulation",
+    "widgetConfigurator": "Configurateur",
     "widgetDiagram": "Schéma",
     "widgetCode": "Code",
     "widgetGame": "Jeu",

@@ -2,7 +2,7 @@
 
 This chapter describes `scene.content` when `scene.type` is `interactive`.
 
-The fields come from the shared interactive contract, the app's six
+The fields come from the shared interactive contract, the app's seven
 `WidgetConfig` variants, `applyWidgetEdit`, and `validateAppScene`.
 
 ## Interactive content root
@@ -43,6 +43,7 @@ Legal widget types are:
 
 ```text
 simulation
+configurator
 diagram
 code
 game
@@ -93,6 +94,22 @@ Optional `presets` is an array of:
 The type does not state that default lies between min and max, that step is
 positive, or that every preset key names a declared variable. Those are
 semantic responsibilities.
+
+## `configurator`
+
+| Field | Type | Required | Meaning |
+| --- | --- | --- | --- |
+| `type` | `"configurator"` | yes | discriminator |
+| `title` | string | yes | learner-facing builder name |
+| `description` | string | yes | artifact the learner will assemble |
+| `fields` | `ConfiguratorField[]` | yes | labeled inputs used to build the result |
+| `presets` | array | no | named sets of field values |
+| `outputLabel` | string | no | label shown above the live preview |
+
+Each configurator field has `name`, `label`, and a `type` of `text`, `textarea`,
+`select`, `multiselect`, or `toggle`. It may also define a placeholder, default,
+required state, and options. The generated HTML must present a live output
+preview; configurators do not use a simulation canvas.
 
 ## `diagram`
 

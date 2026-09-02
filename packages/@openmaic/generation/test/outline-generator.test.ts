@@ -5,6 +5,7 @@ import {
   DEFAULT_LANGUAGE_DIRECTIVE,
   applyOutlineFallbacks,
   generateSceneOutlinesFromRequirements,
+  normalizeConfiguratorOutline,
   sanitizeProceduralSkillOutline,
   type AICallFn,
   type GenerationLogger,
@@ -180,6 +181,42 @@ describe('outline fallbacks', () => {
     };
     applyOutlineFallbacks({ ...baseOutline, type: 'interactive' }, true, { logger });
     expect(warn).toHaveBeenCalledOnce();
+  });
+});
+
+describe('normalizeConfiguratorOutline', () => {
+  test('corrects a prompt builder mislabeled as a simulation', () => {
+    const normalized = normalizeConfiguratorOutline({
+      id: 'scene-prompt-builder',
+      type: 'interactive',
+      title: 'AI Video Prompt Builder',
+      description: 'Build a complete prompt from production choices.',
+      keyPoints: ['Choose the subject', 'Preview the assembled prompt'],
+      order: 1,
+      widgetType: 'simulation',
+      widgetOutline: {
+        concept: 'AI video prompt builder',
+        keyVariables: ['subject', 'action', 'camera'],
+      },
+    });
+
+    expect(normalized.widgetType).toBe('configurator');
+    expect(normalized.widgetOutline?.keyVariables).toEqual(['subject', 'action', 'camera']);
+  });
+
+  test('preserves a real simulation', () => {
+    const simulation = {
+      id: 'scene-projectile-motion',
+      type: 'interactive' as const,
+      title: 'Projectile Motion',
+      description: 'Vary angle and velocity to observe the trajectory.',
+      keyPoints: ['Angle', 'Velocity'],
+      order: 1,
+      widgetType: 'simulation' as const,
+      widgetOutline: { concept: 'projectile motion', keyVariables: ['angle', 'velocity'] },
+    };
+
+    expect(normalizeConfiguratorOutline(simulation)).toBe(simulation);
   });
 });
 

@@ -1098,6 +1098,7 @@
     "quizConfigSummary": "{{count}} 道題",
     "interactiveWidgetKind": "元件類型",
     "widgetSimulation": "模擬",
+    "widgetConfigurator": "設定建構器",
     "widgetDiagram": "圖示",
     "widgetCode": "程式碼",
     "widgetGame": "遊戲",

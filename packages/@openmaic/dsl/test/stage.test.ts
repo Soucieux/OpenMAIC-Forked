@@ -89,6 +89,7 @@ describe('discriminant guards', () => {
 
   it('guards widget, interactive, and PBL content structurally', () => {
     expect(isWidgetType('procedural-skill')).toBe(true);
+    expect(isWidgetType('configurator')).toBe(true);
     expect(isWidgetType('video')).toBe(false);
 
     expect(

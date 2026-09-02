@@ -1113,6 +1113,7 @@
     "quizConfigSummary": "{{count}} câu hỏi",
     "interactiveWidgetKind": "Loại thành phần",
     "widgetSimulation": "Mô phỏng",
+    "widgetConfigurator": "Trình cấu hình",
     "widgetDiagram": "Sơ đồ",
     "widgetCode": "Mã nguồn",
     "widgetGame": "Trò chơi",

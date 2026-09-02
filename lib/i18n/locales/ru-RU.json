@@ -1113,6 +1113,7 @@
     "quizConfigSummary": "{{count}} вопросов",
     "interactiveWidgetKind": "Тип виджета",
     "widgetSimulation": "Симуляция",
+    "widgetConfigurator": "Конфигуратор",
     "widgetDiagram": "Диаграмма",
     "widgetCode": "Код",
     "widgetGame": "Игра",

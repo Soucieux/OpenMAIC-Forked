@@ -140,11 +140,12 @@ Use \`interactive\` type when a concept benefits significantly from hands-on int
 - **Data exploration**: Interactive charts, statistical sampling, regression fitting
 - **Chemistry**: Molecular structure, reaction balancing, pH titration
 - **Programming concepts**: Algorithm visualization, data structure operations
+- **Structured builders**: Prompt builders, planners, composers, and configuration tools
 
 **Constraints**:
 
 - Limit to **1-2 interactive scenes per course** (they are resource-intensive)
-- Interactive scenes **require** an \`interactiveConfig\` object
+- Interactive scenes **require** both \`widgetType\` and \`widgetOutline\`
 - Do NOT use interactive for purely textual/conceptual content - use slides instead
 - The \`interactiveConfig.designIdea\` should describe the specific interactive elements and user interactions
 
@@ -157,10 +158,13 @@ When generating an interactive scene, you MUST select the appropriate widget typ
 | Concept Characteristics | Widget Type | widgetOutline Fields |
 |-------------------------|-------------|---------------------|
 | Physics/chemistry phenomena with adjustable parameters | \`simulation\` | \`concept\`, \`keyVariables\` |
+| Building a structured artifact from form choices or text | \`configurator\` | \`concept\`, \`keyVariables\` |
 | Processes, workflows, cause-effect chains | \`diagram\` | \`diagramType\` |
 | Programming concepts, algorithms | \`code\` | \`language\` |
 | Practice activities, gamified assessment | \`game\` | \`gameType\`, \`challenge\` |
 | Biological/geometric structures, 3D models | \`visualization3d\` | \`visualizationType\`, \`objects\` |
+
+If the learner builds a prompt, plan, message, scenario, or other structured artifact from choices and text, select \`configurator\`. Do not classify that interaction as a \`simulation\`, even when the output changes live.
 
 **widgetOutline Format by Type:**
 
@@ -169,6 +173,12 @@ When generating an interactive scene, you MUST select the appropriate widget typ
 "widgetOutline": {
   "concept": "concept_name",
   "keyVariables": ["variable1", "variable2"]
+}
+
+// configurator
+"widgetOutline": {
+  "concept": "artifact_to_build",
+  "keyVariables": ["field1", "field2", "field3"]
 }
 
 // diagram
@@ -307,7 +317,7 @@ Rules:
 
 | quizConfig        | object                   | ❌       | Required for quiz type, contains questionCount/difficulty/questionTypes                          |
 | interactiveConfig | object                   | ❌ (deprecated) | Legacy: use widgetType + widgetOutline instead                                                                                       |
-| widgetType        | string                   | ✅ (for interactive) | Widget type: "simulation", "diagram", "code", "game", "visualization3d"                                                 |
+| widgetType        | string                   | ✅ (for interactive) | Widget type: "simulation", "configurator", "diagram", "code", "game", "visualization3d"                                 |
 | widgetOutline     | object                   | ✅ (for interactive) | Widget-specific configuration (see Widget Type Selection)                                                               |
 | pblConfig         | object                   | ❌       | Required for pbl type, contains projectTopic/projectDescription/targetSkills/issueCount/language |
 
@@ -465,8 +475,9 @@ Never return a bare array. Never omit \`languageDirective\` or \`courseTitle\`. 
    }
    \`\`\`
 
-- **Interactive scenes**: If a concept benefits from hands-on simulation/visualization, use \`"type": "interactive"\` with \`widgetType\` and \`widgetOutline\` fields. Limit to 1-2 per course.
-   - Select widgetType based on concept: simulation (physics/chem), diagram (processes), code (programming), game (practice), visualization3d (3D models)
+- **Interactive scenes**: If a concept benefits from hands-on interaction, use \`"type": "interactive"\` with \`widgetType\` and \`widgetOutline\` fields. Limit to 1-2 per course.
+   - Select widgetType based on concept: simulation (physics/chem), configurator (builders/composers/planners), diagram (processes), code (programming), game (practice), visualization3d (3D models)
+   - If the learner builds a prompt, plan, message, scenario, or other structured artifact from choices and text, use \`configurator\`, not \`simulation\`
    - Provide appropriate widgetOutline for the widget type
 - **Scene count**: Based on inferred duration, typically 1-2 scenes per minute
 - **Quiz placement**: Recommend inserting a quiz every 3-5 slides for assessment
@@ -683,11 +694,12 @@ Use \`interactive\` type when a concept benefits significantly from hands-on int
 - **Data exploration**: Interactive charts, statistical sampling, regression fitting
 - **Chemistry**: Molecular structure, reaction balancing, pH titration
 - **Programming concepts**: Algorithm visualization, data structure operations
+- **Structured builders**: Prompt builders, planners, composers, and configuration tools
 
 **Constraints**:
 
 - Limit to **1-2 interactive scenes per course** (they are resource-intensive)
-- Interactive scenes **require** an \`interactiveConfig\` object
+- Interactive scenes **require** both \`widgetType\` and \`widgetOutline\`
 - Do NOT use interactive for purely textual/conceptual content - use slides instead
 - The \`interactiveConfig.designIdea\` should describe the specific interactive elements and user interactions
 
@@ -700,10 +712,13 @@ When generating an interactive scene, you MUST select the appropriate widget typ
 | Concept Characteristics | Widget Type | widgetOutline Fields |
 |-------------------------|-------------|---------------------|
 | Physics/chemistry phenomena with adjustable parameters | \`simulation\` | \`concept\`, \`keyVariables\` |
+| Building a structured artifact from form choices or text | \`configurator\` | \`concept\`, \`keyVariables\` |
 | Processes, workflows, cause-effect chains | \`diagram\` | \`diagramType\` |
 | Programming concepts, algorithms | \`code\` | \`language\` |
 | Practice activities, gamified assessment | \`game\` | \`gameType\`, \`challenge\` |
 | Biological/geometric structures, 3D models | \`visualization3d\` | \`visualizationType\`, \`objects\` |
+
+If the learner builds a prompt, plan, message, scenario, or other structured artifact from choices and text, select \`configurator\`. Do not classify that interaction as a \`simulation\`, even when the output changes live.
 
 **widgetOutline Format by Type:**
 
@@ -712,6 +727,12 @@ When generating an interactive scene, you MUST select the appropriate widget typ
 "widgetOutline": {
   "concept": "concept_name",
   "keyVariables": ["variable1", "variable2"]
+}
+
+// configurator
+"widgetOutline": {
+  "concept": "artifact_to_build",
+  "keyVariables": ["field1", "field2", "field3"]
 }
 
 // diagram
@@ -854,7 +875,7 @@ Rules:
 
 | quizConfig        | object                   | ❌       | Required for quiz type, contains questionCount/difficulty/questionTypes                          |
 | interactiveConfig | object                   | ❌ (deprecated) | Legacy: use widgetType + widgetOutline instead                                                                                       |
-| widgetType        | string                   | ✅ (for interactive) | Widget type: "simulation", "diagram", "code", "game", "visualization3d"                                                 |
+| widgetType        | string                   | ✅ (for interactive) | Widget type: "simulation", "configurator", "diagram", "code", "game", "visualization3d"                                 |
 | widgetOutline     | object                   | ✅ (for interactive) | Widget-specific configuration (see Widget Type Selection)                                                               |
 | pblConfig         | object                   | ❌       | Required for pbl type, contains projectTopic/projectDescription/targetSkills/issueCount/language |
 
@@ -1021,8 +1042,9 @@ Never return a bare array. Never omit \`languageDirective\` or \`courseTitle\`. 
 
 - **If source images are available**, add \`suggestedImageIds\` to relevant slide scenes. Only use image IDs listed under Available Images.
 
-- **Interactive scenes**: If a concept benefits from hands-on simulation/visualization, use \`"type": "interactive"\` with \`widgetType\` and \`widgetOutline\` fields. Limit to 1-2 per course.
-   - Select widgetType based on concept: simulation (physics/chem), diagram (processes), code (programming), game (practice), visualization3d (3D models)
+- **Interactive scenes**: If a concept benefits from hands-on interaction, use \`"type": "interactive"\` with \`widgetType\` and \`widgetOutline\` fields. Limit to 1-2 per course.
+   - Select widgetType based on concept: simulation (physics/chem), configurator (builders/composers/planners), diagram (processes), code (programming), game (practice), visualization3d (3D models)
+   - If the learner builds a prompt, plan, message, scenario, or other structured artifact from choices and text, use \`configurator\`, not \`simulation\`
    - Provide appropriate widgetOutline for the widget type
 - **Scene count**: Based on inferred duration, typically 1-2 scenes per minute
 - **Quiz placement**: Recommend inserting a quiz every 3-5 slides for assessment
@@ -1212,11 +1234,12 @@ Use \`interactive\` type when a concept benefits significantly from hands-on int
 - **Data exploration**: Interactive charts, statistical sampling, regression fitting
 - **Chemistry**: Molecular structure, reaction balancing, pH titration
 - **Programming concepts**: Algorithm visualization, data structure operations
+- **Structured builders**: Prompt builders, planners, composers, and configuration tools
 
 **Constraints**:
 
 - Limit to **1-2 interactive scenes per course** (they are resource-intensive)
-- Interactive scenes **require** an \`interactiveConfig\` object
+- Interactive scenes **require** both \`widgetType\` and \`widgetOutline\`
 - Do NOT use interactive for purely textual/conceptual content - use slides instead
 - The \`interactiveConfig.designIdea\` should describe the specific interactive elements and user interactions
 
@@ -1229,10 +1252,13 @@ When generating an interactive scene, you MUST select the appropriate widget typ
 | Concept Characteristics | Widget Type | widgetOutline Fields |
 |-------------------------|-------------|---------------------|
 | Physics/chemistry phenomena with adjustable parameters | \`simulation\` | \`concept\`, \`keyVariables\` |
+| Building a structured artifact from form choices or text | \`configurator\` | \`concept\`, \`keyVariables\` |
 | Processes, workflows, cause-effect chains | \`diagram\` | \`diagramType\` |
 | Programming concepts, algorithms | \`code\` | \`language\` |
 | Practice activities, gamified assessment | \`game\` | \`gameType\`, \`challenge\` |
 | Biological/geometric structures, 3D models | \`visualization3d\` | \`visualizationType\`, \`objects\` |
+
+If the learner builds a prompt, plan, message, scenario, or other structured artifact from choices and text, select \`configurator\`. Do not classify that interaction as a \`simulation\`, even when the output changes live.
 
 **widgetOutline Format by Type:**
 
@@ -1241,6 +1267,12 @@ When generating an interactive scene, you MUST select the appropriate widget typ
 "widgetOutline": {
   "concept": "concept_name",
   "keyVariables": ["variable1", "variable2"]
+}
+
+// configurator
+"widgetOutline": {
+  "concept": "artifact_to_build",
+  "keyVariables": ["field1", "field2", "field3"]
 }
 
 // diagram
@@ -1381,7 +1413,7 @@ Rules:
 
 | quizConfig        | object                   | ❌       | Required for quiz type, contains questionCount/difficulty/questionTypes                          |
 | interactiveConfig | object                   | ❌ (deprecated) | Legacy: use widgetType + widgetOutline instead                                                                                       |
-| widgetType        | string                   | ✅ (for interactive) | Widget type: "simulation", "diagram", "code", "game", "visualization3d"                                                 |
+| widgetType        | string                   | ✅ (for interactive) | Widget type: "simulation", "configurator", "diagram", "code", "game", "visualization3d"                                 |
 | widgetOutline     | object                   | ✅ (for interactive) | Widget-specific configuration (see Widget Type Selection)                                                               |
 | pblConfig         | object                   | ❌       | Required for pbl type, contains projectTopic/projectDescription/targetSkills/issueCount/language |
 
@@ -1539,8 +1571,9 @@ Never return a bare array. Never omit \`languageDirective\` or \`courseTitle\`. 
    }
    \`\`\`
 
-- **Interactive scenes**: If a concept benefits from hands-on simulation/visualization, use \`"type": "interactive"\` with \`widgetType\` and \`widgetOutline\` fields. Limit to 1-2 per course.
-   - Select widgetType based on concept: simulation (physics/chem), diagram (processes), code (programming), game (practice), visualization3d (3D models)
+- **Interactive scenes**: If a concept benefits from hands-on interaction, use \`"type": "interactive"\` with \`widgetType\` and \`widgetOutline\` fields. Limit to 1-2 per course.
+   - Select widgetType based on concept: simulation (physics/chem), configurator (builders/composers/planners), diagram (processes), code (programming), game (practice), visualization3d (3D models)
+   - If the learner builds a prompt, plan, message, scenario, or other structured artifact from choices and text, use \`configurator\`, not \`simulation\`
    - Provide appropriate widgetOutline for the widget type
 - **Scene count**: Based on inferred duration, typically 1-2 scenes per minute
 - **Quiz placement**: Recommend inserting a quiz every 3-5 slides for assessment
@@ -1691,11 +1724,12 @@ Use \`interactive\` type when a concept benefits significantly from hands-on int
 - **Data exploration**: Interactive charts, statistical sampling, regression fitting
 - **Chemistry**: Molecular structure, reaction balancing, pH titration
 - **Programming concepts**: Algorithm visualization, data structure operations
+- **Structured builders**: Prompt builders, planners, composers, and configuration tools
 
 **Constraints**:
 
 - Limit to **1-2 interactive scenes per course** (they are resource-intensive)
-- Interactive scenes **require** an \`interactiveConfig\` object
+- Interactive scenes **require** both \`widgetType\` and \`widgetOutline\`
 - Do NOT use interactive for purely textual/conceptual content - use slides instead
 - The \`interactiveConfig.designIdea\` should describe the specific interactive elements and user interactions
 
@@ -1708,10 +1742,13 @@ When generating an interactive scene, you MUST select the appropriate widget typ
 | Concept Characteristics | Widget Type | widgetOutline Fields |
 |-------------------------|-------------|---------------------|
 | Physics/chemistry phenomena with adjustable parameters | \`simulation\` | \`concept\`, \`keyVariables\` |
+| Building a structured artifact from form choices or text | \`configurator\` | \`concept\`, \`keyVariables\` |
 | Processes, workflows, cause-effect chains | \`diagram\` | \`diagramType\` |
 | Programming concepts, algorithms | \`code\` | \`language\` |
 | Practice activities, gamified assessment | \`game\` | \`gameType\`, \`challenge\` |
 | Biological/geometric structures, 3D models | \`visualization3d\` | \`visualizationType\`, \`objects\` |
+
+If the learner builds a prompt, plan, message, scenario, or other structured artifact from choices and text, select \`configurator\`. Do not classify that interaction as a \`simulation\`, even when the output changes live.
 
 **widgetOutline Format by Type:**
 
@@ -1720,6 +1757,12 @@ When generating an interactive scene, you MUST select the appropriate widget typ
 "widgetOutline": {
   "concept": "concept_name",
   "keyVariables": ["variable1", "variable2"]
+}
+
+// configurator
+"widgetOutline": {
+  "concept": "artifact_to_build",
+  "keyVariables": ["field1", "field2", "field3"]
 }
 
 // diagram
@@ -1860,7 +1903,7 @@ Rules:
 
 | quizConfig        | object                   | ❌       | Required for quiz type, contains questionCount/difficulty/questionTypes                          |
 | interactiveConfig | object                   | ❌ (deprecated) | Legacy: use widgetType + widgetOutline instead                                                                                       |
-| widgetType        | string                   | ✅ (for interactive) | Widget type: "simulation", "diagram", "code", "game", "visualization3d"                                                 |
+| widgetType        | string                   | ✅ (for interactive) | Widget type: "simulation", "configurator", "diagram", "code", "game", "visualization3d"                                 |
 | widgetOutline     | object                   | ✅ (for interactive) | Widget-specific configuration (see Widget Type Selection)                                                               |
 | pblConfig         | object                   | ❌       | Required for pbl type, contains projectTopic/projectDescription/targetSkills/issueCount/language |
 
@@ -2020,8 +2063,9 @@ Never return a bare array. Never omit \`languageDirective\` or \`courseTitle\`. 
 
 - **If source images are available**, add \`suggestedImageIds\` to relevant slide scenes. Only use image IDs listed under Available Images.
 
-- **Interactive scenes**: If a concept benefits from hands-on simulation/visualization, use \`"type": "interactive"\` with \`widgetType\` and \`widgetOutline\` fields. Limit to 1-2 per course.
-   - Select widgetType based on concept: simulation (physics/chem), diagram (processes), code (programming), game (practice), visualization3d (3D models)
+- **Interactive scenes**: If a concept benefits from hands-on interaction, use \`"type": "interactive"\` with \`widgetType\` and \`widgetOutline\` fields. Limit to 1-2 per course.
+   - Select widgetType based on concept: simulation (physics/chem), configurator (builders/composers/planners), diagram (processes), code (programming), game (practice), visualization3d (3D models)
+   - If the learner builds a prompt, plan, message, scenario, or other structured artifact from choices and text, use \`configurator\`, not \`simulation\`
    - Provide appropriate widgetOutline for the widget type
 - **Scene count**: Based on inferred duration, typically 1-2 scenes per minute
 - **Quiz placement**: Recommend inserting a quiz every 3-5 slides for assessment

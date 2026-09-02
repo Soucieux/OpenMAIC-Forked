@@ -79,6 +79,8 @@ For procedural-skill widgets, prefer these stable targets when they are present:
 
 For simulation widgets, prefer IDs like `#angle-slider`, `#velocity-slider`, `#result-display`, or selectors from the embedded widget config.
 
+For configurator widgets, prefer the real field IDs, `[data-var="fieldName"]`, `#output-preview`, `#copy-btn`, `#reset-btn`, or selectors from the element inventory. Use `widget_setState` to demonstrate a coherent combination of field values, then direct attention to the assembled preview.
+
 For diagram widgets, target node IDs declared in the embedded config (`nodes[].id`, revealed in `revealOrder`), e.g. `#n1`, `#n2`.
 
 For visualization3d widgets, prefer canonical control IDs: `#canvas-container`, `#controls`, `#zoom-in-btn`, `#zoom-out-btn`, `#speed-slider`, `#reset-btn`, `#info`.

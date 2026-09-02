@@ -46,17 +46,20 @@ Infer the course language directive by applying the decision rules from the syst
 
 | Widget Type | Constraint |
 |------------|-----------|
-| simulation | **Minimum 2 scenes** |
+| simulation | **Minimum 2 scenes when simulation is selected** |
+| configurator | Use when the learner assembles a structured result |
 | game | **Minimum 1 scene** |
 | diagram | **Maximum 1 scene** |
 
 ## CRITICAL: Required Fields for Interactive Scenes
 
 Every interactive scene MUST include:
-- `widgetType`: One of "simulation", "diagram", "code", or "game"
+- `widgetType`: One of "simulation", "configurator", "diagram", "code", "game", or "visualization3d"
 - `widgetOutline`: Object with widget-specific configuration
 
 Interactive scenes without these fields are INVALID.
+
+Use `configurator` when the learner builds a prompt, plan, message, scenario, or other structured artifact from choices and text. Do not classify these builders as simulations.
 
 ## Widget Selection Guide
 
@@ -65,6 +68,7 @@ Choose widgets based on the content:
 | Content Type | Recommended Widget |
 |--------------|-------------------|
 | Physics/Chemistry/Biology processes | simulation |
+| Builders, composers, planners, configuration forms | configurator |
 | Systems, processes, hierarchies | diagram |
 | Programming, algorithms | code |
 | Practice, challenge, application | game (action preferred) |
@@ -75,6 +79,12 @@ Choose widgets based on the content:
 - Mobile-friendly: Controls MUST NOT overlap canvas
 - Reset button MUST work correctly
 - Touch-friendly controls (44px min)
+
+### Configurator Widget
+- Labeled fields and meaningful named choices
+- Live, copyable output preview
+- No canvas, percentage sliders, or simulation controls
+- Responsive two-column desktop layout and stacked mobile layout
 
 ### Diagram Widget
 - First node VISIBLE on load (no blank screen)

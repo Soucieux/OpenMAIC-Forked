@@ -46,7 +46,7 @@ Examples that are not suitable:
 
 If the requirement is suitable, generate the mixed vocational task-engine structure below.
 
-If the requirement is not suitable, do not force procedural-skill. Generate a normal MAIC-style outline using only `slide` and ordinary interactive widgets: `simulation`, `diagram`, `code`, `game`, and `visualization3d`. Do not use `procedural-skill` for non-vocational topics. Match the ordinary MAIC-style course structure to the topic instead of forcing the 10-14 vocational mixed-scene ratio.
+If the requirement is not suitable, do not force procedural-skill. Generate a normal MAIC-style outline using only `slide` and ordinary interactive widgets: `simulation`, `configurator`, `diagram`, `code`, `game`, and `visualization3d`. Do not use `procedural-skill` for non-vocational topics. Match the ordinary MAIC-style course structure to the topic instead of forcing the 10-14 vocational mixed-scene ratio.
 
 The detailed density and mixed-structure rules below apply only to suitable vocational procedural tasks.
 

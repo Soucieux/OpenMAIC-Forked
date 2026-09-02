@@ -1113,6 +1113,7 @@
     "quizConfigSummary": "{{count}}문제",
     "interactiveWidgetKind": "위젯 종류",
     "widgetSimulation": "시뮬레이션",
+    "widgetConfigurator": "구성 도구",
     "widgetDiagram": "다이어그램",
     "widgetCode": "코드",
     "widgetGame": "게임",
