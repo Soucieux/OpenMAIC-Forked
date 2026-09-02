@@ -889,3 +889,122 @@ OpenMAIC/
 - `packages/pptxgenjs` —— [MIT](packages/pptxgenjs/package.json)（第三方）
 
 整体再分发本仓库时，上述子包内文件适用其各自的协议。
+
+<!-- LOCAL-ADDITIONS-START -->
+
+---
+
+## 此定制副本的本地补充
+
+> [!IMPORTANT]
+> 此分界线上方是当前 OpenMAIC 版本的上游 README。下方内容仅记录此定制副本的本地更改和运行说明。更新上游版本时，请保留分界线下方的全部本地内容。
+
+### 共享本地对话模型
+
+**共享模型存储：** OpenMAIC 默认使用 **Mac“文稿”文件夹中的 AI-Models 模型库**里的
+**Qwen3-4B Q4_K_M**。也可使用**外部 SSD 上的 AI-Models 模型库**里的
+**Gemma 3 12B Instruct 4-bit**进行较慢的对比生成。仓库不保存这两个模型的副本；
+OpenMAIC 的私有设置和 MLX 运行环境仍保留在 Mac 上。
+
+| 模型 | 共享库相对路径 | 运行时 | 状态 |
+| --- | --- | --- | --- |
+| Qwen3-4B Q4_K_M | `gguf/Qwen3-4B-Q4_K_M.gguf` | llama.cpp 0.3.0 | 默认；四场景课堂完整测试通过 |
+| Gemma 3 12B Instruct 4-bit | `huggingface/hub/models--mlx-community--gemma-3-12b-it-4bit/snapshots/86cc6a8dedbc456dd0e4af01a9d09f396f77e558/` | `.venv-llm/` 中的 MLX-LM 0.31.3 | 可选；完整测试通过，但生成内容仍需审核 |
+
+OpenMAIC 通过 `http://127.0.0.1:11434/v1` 调用无密钥的 OpenAI 兼容接口。界面把这个兼容入口标为
+**Ollama**，但本次实际测试的引擎是 Qwen 使用 llama.cpp、Gemma 使用 MLX-LM。
+不提交 Git 的 `.env.local` 保存接口、可选模型和默认模型；共享模型文件保持只读。
+
+Qwen 运行时首次安装：
+
+```sh
+brew install llama.cpp
+```
+
+可选 Gemma 运行环境首次安装：
+
+```sh
+uv venv --python 3.12 .venv-llm
+uv pip install --python .venv-llm/bin/python "mlx-lm==0.31.3"
+```
+
+这里只安装运行依赖，不下载或复制 Gemma。当前检出已创建该环境，并在本地排除 Git 跟踪。
+
+**每天使用默认 Qwen：**
+
+1. 在仓库根目录打开第一个终端，启动本地模型服务：
+
+   ```sh
+   llama-server \
+     --model "$HOME/Documents/AI-Models/gguf/Qwen3-4B-Q4_K_M.gguf" \
+     --alias qwen3-4b --host 127.0.0.1 --port 11434 \
+     --ctx-size 16384 --parallel 1 --jinja \
+     --reasoning off --reasoning-budget 0 --flash-attn on --offline
+   ```
+
+2. 在仓库根目录打开第二个终端，正常启动 OpenMAIC：
+
+   ```sh
+   pnpm dev
+   ```
+
+第一个终端用于把本地原始模型加载为推理服务；模型放在 Mac 还是 SSD 都不会增加额外终端。
+只使用文字功能时不需要启动 TTS 服务。
+
+**可选 Gemma 对比：** 先停止 Qwen 并挂载外部模型库，再用
+`.venv-llm/bin/mlx_lm.server` 在 `11434` 端口加载私有 `OLLAMA_MODELS` 中登记的
+Gemma 绝对快照路径。参数使用 `--max-tokens 8192`、`--decode-concurrency 1`、
+`--prompt-concurrency 1`、`--prefill-step-size 512`、`--prompt-cache-size 1`，并设置
+`HF_HUB_OFFLINE=1` 和 `TRANSFORMERS_OFFLINE=1`。在 OpenMAIC 中选择同一个模型。
+16 GB Mac 一次只运行一个大型模型服务，弹出外部模型库前先停止服务。
+
+同一份四场景中文电学课程测试关闭了搜索、图片、视频和 TTS：
+
+| 结果 | Qwen3-4B | Gemma 3 12B |
+| --- | --- | --- |
+| OpenMAIC 课堂 | 完成 4 个场景 | 完成 4 个场景 |
+| 约用时 | 4 分 19 秒 | 16 分 33 秒 |
+| 实际质量 | 保存后的公式和答案一致；幻灯片较简单 | 幻灯片和测验更丰富，但一题错误地把 `I = V × R` 判为正确 |
+| 建议 | 此 Mac 的默认模型 | 可选草稿模型；所有事实与答案都要审核 |
+
+这只是一次受控本地对比，不是通用基准。OpenMAIC 的单个场景请求超过 9.7K tokens，
+因此 Qwen 服务需要 16K 上下文。本次连接没有下载、复制、转换或升级模型。
+
+### 外部 SSD 共享模型：本地语音
+
+新增的 Mac 本地语音模式读取外部 SSD 中的共享 **Qwen3 TTS Base** 模型，仓库内不保存模型副本。项目配置、参考录音和 Python 环境保留在 Mac，不写入共享模型库；文档不需要个人磁盘名或账号路径。
+
+| 项目 | 设置 |
+| --- | --- |
+| 模型 | `mlx-community/Qwen3-TTS-12Hz-1.7B-Base-bf16` |
+| 固定模型版本 | `a6eb4f68e4b056f1215157bb696209bc82a6db48` |
+| 运行环境 | Apple Silicon Mac、Python 3.12、MLX-Audio 0.5.0 |
+| 共享入口 | `~/Models`，指向已挂载的外部模型卷 |
+| 本地语音服务 | `http://127.0.0.1:8012`，仅本机可访问 |
+| 项目设置 / 参考录音 | `.local-tts/`，不提交 Git |
+| Python 环境 | `.venv-tts/`，不提交 Git |
+
+**这里只切换 TTS（文字转语音），不是对话/推理 LLM。** 其他提供方配置保持不变，仍可能使用收费服务。
+
+首次安装 `uv`（Python 环境与依赖管理工具）并挂载模型库后，在 **OpenMAIC 仓库根目录**执行：
+
+```sh
+uv venv --python 3.12 .venv-tts
+uv pip install --python .venv-tts/bin/python -r scripts/local-tts/requirements.txt
+pnpm tts:check
+```
+
+每天使用时：
+
+1. 挂载共享模型库，在一个终端运行 `pnpm tts:serve`。
+2. 在另一个终端运行 `pnpm dev:local`。
+3. 在 **设置 → TTS** 中选择并启用 **Shared local TTS (MLX)**，选择 **Project local voice**，测试一句短文本。
+4. 使用完毕，先停止生成并用 **Control-C** 关闭两个进程，再弹出模型卷。
+
+本地启动命令会在该进程中禁用其他语音提供方；服务或磁盘不可用时直接报错，不自动下载模型、不回退到收费语音 API。原来的 `pnpm dev` 保留原有提供方配置。已有课程/角色的云端音色绑定需要改选本地提供方，不能直接复用云端克隆 ID。
+
+Base 模型没有云端预设音色。默认音色可能变化；要稳定声音，请把有权使用的参考录音及其准确文字放在本项目 `.local-tts/`，按 [完整设置步骤](README.md#shared-local-speech-model-on-an-external-ssd) 配置并重启语音服务。云端音色注册仍是独立功能。
+
+限制：一次处理一条请求，最多 2,000 个字符，正常语速，完整 WAV 输出，不支持流式播放；本地请求最多等待十分钟。多个项目共享磁盘文件，但各自运行的服务仍分别占用内存；内存有限时一次只开一个。取消网页请求不保证模型计算立即停止。
+
+这是同一台 Mac 上的本地连接；远程部署和容器不会自动访问该 SSD。模型更新需先测试新版本，再更新项目版本设置和共享库登记/变更记录。连接器添加于 **2026-08-30**，未升级模型权重。

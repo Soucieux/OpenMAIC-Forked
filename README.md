@@ -1123,3 +1123,311 @@ The repository bundles workspace packages that are **not** covered by the root M
 - `packages/pptxgenjs` — [MIT](packages/pptxgenjs/package.json) (third-party)
 
 When redistributing the repository as a whole, the terms of each bundled package above apply to that package's files.
+
+<!-- LOCAL-ADDITIONS-START -->
+
+---
+
+## Local additions for this customized copy
+
+> [!IMPORTANT]
+> Everything above this boundary is the original upstream README for the checked-out OpenMAIC version. Everything below documents changes and operating instructions maintained for this customized copy. When updating from upstream, keep upstream documentation above the boundary and local documentation below it.
+
+These additions apply only to this customized checkout. They do not describe requirements for every upstream OpenMAIC installation.
+
+### Shared local chat models
+
+**Shared model storage:** OpenMAIC uses **Qwen3-4B Q4_K_M** from the
+**AI-Models library in the Mac's Documents folder** as its default local chat model. It can
+also use **Gemma 3 12B Instruct 4-bit** from the **AI-Models library on the external SSD**
+for slower comparison runs. The repository contains no copy of either model. OpenMAIC's
+private settings and MLX runtime stay on the Mac.
+
+| Model | Shared-library relative path | Runtime | Status |
+| --- | --- | --- | --- |
+| Qwen3-4B Q4_K_M | `gguf/Qwen3-4B-Q4_K_M.gguf` | llama.cpp 0.3.0 | Default; full four-scene classroom test passed |
+| Gemma 3 12B Instruct 4-bit | `huggingface/hub/models--mlx-community--gemma-3-12b-it-4bit/snapshots/86cc6a8dedbc456dd0e4af01a9d09f396f77e558/` | MLX-LM 0.31.3 in `.venv-llm/` | Optional; full test passed, but generated content still requires review |
+
+OpenMAIC calls a keyless OpenAI-compatible endpoint at `http://127.0.0.1:11434/v1`.
+The app labels this compatibility slot **Ollama**, but the tested engines are llama.cpp for
+Qwen and MLX-LM for Gemma. The ignored `.env.local` stores the endpoint, allowed model
+identifiers and default model. Model weights remain read-only in their shared libraries.
+
+**First setup for the Qwen runtime:**
+
+```sh
+brew install llama.cpp
+```
+
+**First setup for the optional Gemma runtime:**
+
+```sh
+uv venv --python 3.12 .venv-llm
+uv pip install --python .venv-llm/bin/python "mlx-lm==0.31.3"
+```
+
+This installs runtime packages only. It does not download or copy Gemma. The current
+checkout already has this environment and keeps it out of Git locally.
+
+**Daily use with Qwen, the recommended default:**
+
+1. In one terminal at the repository root, start the local model server:
+
+   ```sh
+   llama-server \
+     --model "$HOME/Documents/AI-Models/gguf/Qwen3-4B-Q4_K_M.gguf" \
+     --alias qwen3-4b --host 127.0.0.1 --port 11434 \
+     --ctx-size 16384 --parallel 1 --jinja \
+     --reasoning off --reasoning-budget 0 --flash-attn on --offline
+   ```
+
+2. In a second terminal at the repository root, start OpenMAIC normally:
+
+   ```sh
+   pnpm dev
+   ```
+
+The first terminal is required because a raw local model needs an inference server. Its
+storage location does not add another terminal. Text-only use does not require the TTS
+service.
+
+**Optional Gemma comparison:** stop Qwen first, mount the external model library, then
+start `.venv-llm/bin/mlx_lm.server` on port `11434` with the exact absolute Gemma snapshot
+path registered in the private `OLLAMA_MODELS` value. Use `--max-tokens 8192`,
+`--decode-concurrency 1`, `--prompt-concurrency 1`, `--prefill-step-size 512`, and
+`--prompt-cache-size 1`; keep `HF_HUB_OFFLINE=1` and `TRANSFORMERS_OFFLINE=1`. Select
+that same model in OpenMAIC. Run only one of these large model servers at a time on a
+16 GB Mac, and stop it before ejecting the external library.
+
+The verified comparison used the same four-scene Chinese electricity lesson with search,
+images, video and TTS disabled:
+
+| Result | Qwen3-4B | Gemma 3 12B |
+| --- | --- | --- |
+| OpenMAIC classroom | 4 scenes completed | 4 scenes completed |
+| Approximate completion time | 4 min 19 sec | 16 min 33 sec |
+| Observed quality | Correct persisted formulas and answer keys; simpler slides | Richer slides and quiz, but one quiz answer key incorrectly accepted `I = V × R` |
+| Recommendation | Default for this Mac | Optional drafting model; review every factual answer |
+
+These are results from one controlled local comparison, not a general benchmark. Qwen
+needed a 16K server context because an OpenMAIC scene request exceeded 9.7K tokens.
+No model was downloaded, copied, converted or upgraded during this connection.
+
+### Shared local speech model on an external SSD
+
+The **local speech mode** reads Qwen3 TTS model files from a shared external SSD. It keeps project settings and voice references on the Mac, without copying the model into this repository. No personal drive name or account path is required in this README.
+
+**This is TTS (text to speech), not the chat/reasoning LLM.** Other configured providers, including the chat model, remain unchanged and may still use paid services.
+
+| Item | Local speech setting |
+| --- | --- |
+| Model | `mlx-community/Qwen3-TTS-12Hz-1.7B-Base-bf16` |
+| Pinned model revision | `a6eb4f68e4b056f1215157bb696209bc82a6db48` |
+| Runtime | Apple Silicon Mac, Python 3.12, MLX-Audio 0.5.0 |
+| Shared model entry point | `~/Models`, pointing to the mounted external model volume |
+| Speech service | `http://127.0.0.1:8012`, accessible only on this Mac |
+| Project configuration / voice reference | `.local-tts/` on the Mac; excluded from Git |
+| Python environment | `.venv-tts/` on the Mac; excluded from Git |
+| Generated audio / preferences | Existing OpenMAIC storage and preferences; never the shared model cache |
+
+**First setup** — mount the model store and install `uv`, the Python environment/package manager. From the **OpenMAIC repository root**:
+
+```sh
+uv venv --python 3.12 .venv-tts
+uv pip install --python .venv-tts/bin/python -r scripts/local-tts/requirements.txt
+pnpm tts:check
+```
+
+Only runtime dependencies are installed. Model loading is offline and uses the pinned cached revision. The check command validates storage/configuration; successful audio generation is a separate check.
+
+**Daily use:**
+
+1. Connect the external drive.
+2. In Finder, open `AI-Models/SharedModels.sparsebundle` on that drive. Seeing the external drive in Finder is not enough: the model vault must also be mounted so `~/Models` becomes available.
+3. From the OpenMAIC repository root, run `pnpm tts:check`. Continue when it reports that the shared model and project configuration are ready.
+4. Start the speech service with `pnpm tts:serve` and leave that Terminal running.
+5. Start the application using the complete local sequence in [Complete local startup](#complete-local-startup).
+6. Open **Settings → TTS**. Select and enable **Shared local TTS (MLX)**, choose **Project local voice**, and test a short sentence.
+
+The local launcher disables the other speech providers for that process. A missing model or service produces an error, with no automatic paid speech fallback. `pnpm dev` retains the existing provider configuration; choosing cloud speech explicitly may incur fees. Existing course/agent bindings to cloud voices need to be changed to the local provider and voice; stored cloud clone IDs are not converted.
+
+**Use your own project voice:**
+
+```sh
+mkdir -p .local-tts
+cp -n scripts/local-tts/config.example.json .local-tts/config.json
+```
+
+Put a recording you are entitled to use at `.local-tts/reference.wav`. Edit only these fields in the copied configuration, keeping its other settings:
+
+```json
+{
+  "reference_audio": ".local-tts/reference.wav",
+  "reference_text": "The exact words spoken in the reference recording."
+}
+```
+
+Restart the speech service after changing its configuration. References must stay inside this project. Without a reference, the Base model uses a variable default voice; it has no Alibaba preset voices. A `null` transcript uses speaker-reference mode instead of transcript-conditioned cloning. Cloud voice registration remains a separate feature and is not provided by this local connector.
+
+**Limits and shutdown:**
+
+- Requests are processed one at a time: up to 2,000 characters, complete WAV output, normal speed, no streaming. The local launcher allows up to ten minutes per speech request.
+- Initial model loading may be slow. Separate project services use separate RAM even when they share model files; start one heavy speech service at a time on a memory-limited Mac.
+- Stop generation and press **Control-C** in every running project Terminal before ejecting the model volume. Canceling a web request does not guarantee immediate cancellation of model computation.
+- This is a same-Mac setup. A remote deployment or container needs its own explicit storage/service configuration; this change does not expose the service publicly.
+- For an intentional model upgrade, keep the old revision, test the new one, update this project's revision setting, and add an entry to the shared store's project register/change history. Do not edit shared downloaded files in place.
+
+See [MLX-Audio](https://github.com/Blaizzy/mlx-audio) for the runtime. This connector was added on **2026-08-30**; the model weights were not upgraded.
+
+### Complete local startup
+
+1. Connect the external drive and open `AI-Models/SharedModels.sparsebundle` in Finder. Verify the speech model before starting anything:
+
+   ```bash
+   pnpm tts:check
+   ```
+
+2. For web search, open Docker Desktop. Start or recreate the project-owned SearXNG container from the repository root:
+
+   ```bash
+   docker compose -f .local-services/searxng/compose.yml up -d
+   ```
+
+   This command returns to the prompt. SearXNG runs in Docker, so it does not require an open Terminal. Skip this step if web search is not needed.
+
+3. Keep these processes running:
+
+   | Process | Purpose | Required? |
+   | --- | --- | --- |
+   | Terminal 1: local Qwen server | Chat, planning and classroom generation | Yes for the configured local chat model |
+   | Terminal 2: `pnpm tts:serve` | Local speech generation | Only when local speech is needed |
+   | Terminal 3: `pnpm dev:local` | OpenMAIC web application with local speech enabled | Yes for the complete local setup |
+   | Docker: SearXNG container | Web search | Only when web search is needed; no Terminal remains open |
+
+   In Terminal 1:
+
+   ```bash
+   llama-server \
+     --model "$HOME/Documents/AI-Models/gguf/Qwen3-4B-Q4_K_M.gguf" \
+     --alias qwen3-4b --host 127.0.0.1 --port 11434 \
+     --ctx-size 16384 --parallel 1 --jinja \
+     --reasoning off --reasoning-budget 0 --flash-attn on --offline
+   ```
+
+   In Terminal 2:
+
+   ```bash
+   pnpm tts:serve
+   ```
+
+   In Terminal 3:
+
+   ```bash
+   pnpm dev:local
+   ```
+
+4. Open **http://127.0.0.1:3000**. Wait for `Ready` in Terminal 3 before using the page. Enable web search in the generation controls when current online information is needed.
+
+The chat and speech servers are required because raw models need inference runtimes. Their storage locations do not create additional Terminal requirements. Do not run `pnpm dev` and `pnpm dev:local` at the same time.
+
+### Docker and SearXNG behavior
+
+This customized setup uses the Docker image `searxng/searxng` to provide web search at `http://127.0.0.1:8888`.
+
+| Item | What happens when Docker Desktop quits |
+| --- | --- |
+| SearXNG container | Stops, so OpenMAIC cannot perform web searches |
+| SearXNG image | Remains installed in Docker Desktop storage until it is explicitly deleted |
+| OpenMAIC at `http://127.0.0.1:3000` | Continues running while its own Terminal remains open |
+| Local chat server at `http://127.0.0.1:11434` | Continues running while its own Terminal remains open |
+| Local speech server at `http://127.0.0.1:8012` | Continues running while its own Terminal remains open |
+| Mounted model vault and model files | Remain unchanged |
+
+Without SearXNG, OpenMAIC can still use the local model and any materials supplied by the user. The result is not automatically inaccurate. Stable topics may be unaffected, while current or frequently changing subjects such as news, software releases, laws, prices and recent research can be outdated or incomplete. If web search is enabled while Docker is closed, OpenMAIC may report a search error or be unable to include online sources.
+
+To restore web search:
+
+1. Open Docker Desktop.
+2. From the OpenMAIC repository root, run:
+
+   ```bash
+   docker compose -f .local-services/searxng/compose.yml up -d
+   ```
+
+3. Confirm that `http://127.0.0.1:8888` returns HTTP `200`.
+
+The Docker command returns to the prompt; no additional Terminal needs to remain open for SearXNG. Quitting Docker also stops any other containers managed by Docker Desktop, although SearXNG is the only Docker component required by this OpenMAIC setup.
+
+### QA and Troubleshooting
+
+Run the commands below from the OpenMAIC repository root. Last verified: **2026-09-02**.
+
+#### Startup checks
+
+| Component | Check | Expected result |
+| --- | --- | --- |
+| Shared speech model | `pnpm tts:check` | `Shared model and project configuration are ready` |
+| Local chat model | `curl -sS http://127.0.0.1:11434/v1/models` | JSON containing `qwen3-4b` |
+| Local speech service | `curl -sS http://127.0.0.1:8012/health` | JSON with `"ready": true` |
+| SearXNG | `curl -sS -o /dev/null -w "%{http_code}" http://127.0.0.1:8888/` | `200` |
+| OpenMAIC | `curl -sS -o /dev/null -w "%{http_code}" http://127.0.0.1:3000/` | `200` |
+
+#### `Shared model store unavailable`
+
+The external drive can be connected while the model vault inside it is still closed. In that state, `pnpm tts:serve` stops with:
+
+```text
+FileNotFoundError: Shared model store unavailable. Connect and mount the external model store; no download was attempted.
+```
+
+Fix it as follows:
+
+1. Leave the failed command stopped; it has already exited safely.
+2. In Finder, open `AI-Models/SharedModels.sparsebundle` on the external drive.
+3. Confirm that `~/Models` opens and shows the shared model library.
+4. Run `pnpm tts:check`.
+5. When the check succeeds, run `pnpm tts:serve` again.
+
+Do not create a replacement `~/Models` directory, change the configured model revision, or download another model copy to fix this error. The existing `~/Models` link is intended to point to the mounted shared-model volume.
+
+#### OpenMAIC is ready but classroom generation fails
+
+The Next.js application can start even when the chat-model server is absent. Check it with:
+
+```bash
+curl -sS http://127.0.0.1:11434/v1/models
+```
+
+If the command cannot connect or does not list `qwen3-4b`, start the local Qwen server using Terminal 1 in [Complete local startup](#complete-local-startup). Then retry classroom generation.
+
+#### Voice generation fails
+
+1. Run `curl -sS http://127.0.0.1:8012/health`.
+2. If it cannot connect, complete the model-vault steps above and restart `pnpm tts:serve`.
+3. In OpenMAIC, open **Settings → TTS**, enable **Shared local TTS (MLX)** and select **Project local voice**.
+4. Keep the speech Terminal open while generating or playing speech.
+
+#### Web search fails
+
+1. Confirm that Docker Desktop is running.
+2. From the repository root, run:
+
+   ```bash
+   docker compose -f .local-services/searxng/compose.yml up -d
+   ```
+
+3. Run the SearXNG startup check in the table above.
+4. Reload OpenMAIC and enable web search in the generation controls.
+
+The Docker command does not need a permanent Terminal. Quitting Docker Desktop stops SearXNG until Docker is opened and the container is started again.
+
+#### Warnings versus startup failures
+
+The Next.js middleware deprecation message is a warning. If Terminal 3 prints `Ready` and the OpenMAIC startup check returns `200`, the web application has started successfully.
+
+#### Safe shutdown
+
+1. Stop active classroom or speech generation.
+2. Press **Control-C** in the OpenMAIC, speech and local chat-model Terminals.
+3. Quit Docker Desktop if web search is no longer needed.
+4. Eject the mounted model vault before disconnecting the external drive.
