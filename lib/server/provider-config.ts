@@ -6,6 +6,7 @@
  */
 
 import fs from 'fs';
+import { LOCAL_TTS } from '@/lib/audio/local-tts-constants';
 import path from 'path';
 import yaml from 'js-yaml';
 import { createLogger } from '@/lib/logger';
@@ -86,6 +87,7 @@ export const LLM_ENV_MAP: Record<string, string> = {
 };
 
 const TTS_ENV_MAP: Record<string, string> = {
+  TTS_MLX: LOCAL_TTS.id,
   TTS_OPENAI: 'openai-tts',
   TTS_AZURE: 'azure-tts',
   TTS_GLM: 'glm-tts',
@@ -516,7 +518,7 @@ function buildConfig(yamlData: YamlData): ServerConfig {
   return {
     providers,
     tts: loadEnvSection(TTS_ENV_MAP, yamlData.tts, {
-      keylessProviders: new Set(['voxcpm-tts', 'lemonade-tts']),
+      keylessProviders: new Set([LOCAL_TTS.id, 'voxcpm-tts', 'lemonade-tts']),
     }),
     asr: loadEnvSection(ASR_ENV_MAP, yamlData.asr, {
       keylessProviders: new Set(['funasr-asr', 'lemonade-asr']),
@@ -672,6 +674,11 @@ export function getServerTTSProviders(): Record<string, { disabled?: boolean }> 
   const result: Record<string, { disabled?: boolean }> = {};
   for (const id of Object.keys(cfg.tts)) result[id] = {};
   for (const id of cfg.disabled.tts) result[id] = { disabled: true };
+  if (process.env[LOCAL_TTS.onlyEnv] === LOCAL_TTS.onlyValue) {
+    for (const id of new Set([...Object.keys(TTS_PROVIDERS), ...Object.keys(cfg.tts)])) {
+      if (id !== LOCAL_TTS.id) result[id] = { disabled: true };
+    }
+  }
   return result;
 }
 
@@ -692,7 +699,10 @@ export function resolveTTSApiKey(providerId: string, clientKey?: string): string
 
 /** Whether the operator force-disabled this TTS provider (server precedence, #665). */
 export function isServerTTSProviderDisabled(providerId: string): boolean {
-  return isServerProviderDisabled('tts', providerId);
+  return (
+    (process.env[LOCAL_TTS.onlyEnv] === LOCAL_TTS.onlyValue && providerId !== LOCAL_TTS.id) ||
+    isServerProviderDisabled('tts', providerId)
+  );
 }
 
 export function resolveTTSBaseUrl(providerId: string, clientBaseUrl?: string): string | undefined {

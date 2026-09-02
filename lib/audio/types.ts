@@ -1,3 +1,5 @@
+import { LOCAL_TTS } from './local-tts-constants';
+
 /**
  * Audio Provider Type Definitions
  *
@@ -89,6 +91,7 @@ export type BuiltInTTSProviderId =
   | 'elevenlabs-tts'
   | 'minimax-tts'
   | 'lemonade-tts'
+  | typeof LOCAL_TTS.id
   | 'browser-native-tts';
 
 export type TTSProviderId = BuiltInTTSProviderId | `custom-tts-${string}`;

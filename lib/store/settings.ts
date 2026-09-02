@@ -1,3 +1,5 @@
+import { LOCAL_TTS } from '@/lib/audio/local-tts-constants';
+
 /**
  * Settings Store
  *
@@ -666,6 +668,12 @@ const getDefaultAudioConfig = () => ({
   asrProviderId: 'browser-native' as ASRProviderId,
   asrLanguage: 'zh-CN',
   ttsProvidersConfig: {
+    [LOCAL_TTS.id]: {
+      apiKey: LOCAL_TTS.empty,
+      baseUrl: LOCAL_TTS.empty,
+      modelId: LOCAL_TTS.model,
+      enabled: true,
+    },
     // Built-in providers default enabled:true — they only ever surface once
     // configured (API key or server-managed), so "enabled" is a user opt-OUT,
     // not the visibility gate. A server-configured provider must not be hidden
@@ -1813,7 +1821,12 @@ export const useSettingsStore = create<SettingsState>()(
               // Merge TTS providers. Reset both server flags first, then apply:
               // an entry with `disabled` is force-off (server precedence) and is
               // NOT treated as managed/configured; any other entry is managed.
-              const newTTSConfig = { ...state.ttsProvidersConfig };
+              const newTTSConfig: typeof state.ttsProvidersConfig = {
+                ...state.ttsProvidersConfig,
+                [LOCAL_TTS.id]:
+                  state.ttsProvidersConfig[LOCAL_TTS.id] ??
+                  getDefaultAudioConfig().ttsProvidersConfig[LOCAL_TTS.id],
+              };
               for (const pid of Object.keys(newTTSConfig)) {
                 const key = pid as TTSProviderId;
                 if (newTTSConfig[key]) {

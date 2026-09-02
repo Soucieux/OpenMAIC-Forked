@@ -31,7 +31,10 @@
     "eval:outline-language": "tsx eval/outline-language/runner.ts",
     "eval:orchestration": "tsx eval/orchestration/runner.ts",
     "eval:orchestration:answering": "tsx eval/orchestration/answering-runner.ts",
-    "eval:orchestration:answer-content": "tsx eval/orchestration/answer-content-runner.ts"
+    "eval:orchestration:answer-content": "tsx eval/orchestration/answer-content-runner.ts",
+    "tts:serve": ".venv-tts/bin/python scripts/local-tts/server.py",
+    "tts:check": ".venv-tts/bin/python scripts/local-tts/server.py --check",
+    "dev:local": "TTS_LOCAL_ONLY=1 TTS_MLX_BASE_URL=http://127.0.0.1:8012/v1 TTS_MLX_ENABLED=true TTS_REQUEST_TIMEOUT_MS=600000 next dev --hostname 127.0.0.1"
   },
   "dependencies": {
     "@ai-sdk/amazon-bedrock": "^4.0.103",

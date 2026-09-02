@@ -1,3 +1,5 @@
+import { LOCAL_TTS } from './local-tts-constants';
+
 /**
  * Audio Provider Constants
  *
@@ -117,6 +119,24 @@ export function resolveTTSModelForVoice(
 }
 
 export const TTS_PROVIDERS: Record<BuiltInTTSProviderId, TTSProviderConfig> = {
+  [LOCAL_TTS.id]: {
+    id: LOCAL_TTS.id,
+    name: LOCAL_TTS.name,
+    requiresApiKey: false,
+    defaultBaseUrl: LOCAL_TTS.baseUrl,
+    models: [{ id: LOCAL_TTS.model, name: LOCAL_TTS.modelName }],
+    defaultModelId: LOCAL_TTS.model,
+    voices: [
+      {
+        id: LOCAL_TTS.voice,
+        name: LOCAL_TTS.voiceName,
+        language: LOCAL_TTS.language,
+        description: LOCAL_TTS.voiceDescription,
+      },
+    ],
+    supportedFormats: [LOCAL_TTS.wav],
+    speedRange: { min: 1, max: 1, default: 1 },
+  },
   'openai-tts': {
     id: 'openai-tts',
     name: 'OpenAI TTS',
@@ -1334,6 +1354,7 @@ export const ASR_PROVIDERS: Record<BuiltInASRProviderId, ASRProviderConfig> = {
  * Used when switching providers or testing a non-active provider.
  */
 export const DEFAULT_TTS_VOICES: Record<BuiltInTTSProviderId, string> = {
+  [LOCAL_TTS.id]: LOCAL_TTS.voice,
   'openai-tts': 'alloy',
   'azure-tts': 'zh-CN-XiaoxiaoNeural',
   'glm-tts': 'tongtong',
@@ -1347,6 +1368,7 @@ export const DEFAULT_TTS_VOICES: Record<BuiltInTTSProviderId, string> = {
 };
 
 export const DEFAULT_TTS_MODELS: Record<BuiltInTTSProviderId, string> = {
+  [LOCAL_TTS.id]: LOCAL_TTS.model,
   'openai-tts': 'gpt-4o-mini-tts',
   'azure-tts': '',
   'glm-tts': 'glm-tts',

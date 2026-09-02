@@ -93,6 +93,8 @@
  */
 
 import type { TTSModelConfig } from './types';
+import { LOCAL_TTS } from './local-tts-constants';
+import { generateLocalTTS } from './local-tts';
 import { isCustomTTSProvider } from './types';
 import { isQwenCloneVoice, resolveTTSModelForVoice, TTS_PROVIDERS } from './constants';
 import { downloadAudio, QwenVoiceCloneError, synthesizeQwenVoiceClone } from './qwen-voice-clone';
@@ -282,6 +284,12 @@ export async function generateTTS(
   config: TTSModelConfig,
   text: string,
 ): Promise<TTSGenerationResult> {
+  if (
+    process.env[LOCAL_TTS.onlyEnv] === LOCAL_TTS.onlyValue &&
+    config.providerId !== LOCAL_TTS.id
+  ) {
+    throw new Error(LOCAL_TTS.onlyMessage);
+  }
   const provider = TTS_PROVIDERS[config.providerId as keyof typeof TTS_PROVIDERS];
 
   // Validate API key if required (only for built-in providers with known config)
@@ -292,6 +300,9 @@ export async function generateTTS(
   const signal = ttsRequestSignal(config.signal);
   try {
     switch (config.providerId) {
+      case LOCAL_TTS.id:
+        return await generateLocalTTS(config, text, signal);
+
       case 'openai-tts':
         return await generateOpenAITTS(config, text, signal);
 

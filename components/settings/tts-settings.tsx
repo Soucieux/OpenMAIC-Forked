@@ -1,5 +1,7 @@
 'use client';
 
+import { LOCAL_TTS } from '@/lib/audio/local-tts-constants';
+
 import { useState, useEffect, useRef, type ReactNode } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -123,6 +125,7 @@ export function TTSSettings({ selectedProviderId }: TTSSettingsProps) {
           'default'
         : DEFAULT_TTS_VOICES[selectedProviderId as keyof typeof DEFAULT_TTS_VOICES] || 'default';
   const cloneSpeedDisabled = selectedProviderId === 'qwen-tts' && isQwenCloneVoice(effectiveVoice);
+  const fixedSpeed = cloneSpeedDisabled || selectedProviderId === LOCAL_TTS.id;
 
   const [showApiKey, setShowApiKey] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -218,6 +221,8 @@ export function TTSSettings({ selectedProviderId }: TTSSettingsProps) {
       case 'glm-tts':
       case 'lemonade-tts':
         return '/audio/speech';
+      case LOCAL_TTS.id:
+        return LOCAL_TTS.endpoint;
       case 'azure-tts':
         return '/cognitiveservices/v1';
       case 'qwen-tts':
@@ -477,7 +482,7 @@ export function TTSSettings({ selectedProviderId }: TTSSettingsProps) {
         <div className="flex items-center justify-between">
           <Label className="text-sm">{t('settings.ttsSpeed')}</Label>
           <span className="text-xs text-muted-foreground">
-            {cloneSpeedDisabled ? '1×' : `${ttsSpeed.toFixed(2)}×`}
+            {fixedSpeed ? '1×' : `${ttsSpeed.toFixed(2)}×`}
           </span>
         </div>
         <input
@@ -486,8 +491,8 @@ export function TTSSettings({ selectedProviderId }: TTSSettingsProps) {
           min={ttsProvider?.speedRange?.min ?? 0.5}
           max={ttsProvider?.speedRange?.max ?? 2}
           step={0.05}
-          value={cloneSpeedDisabled ? 1 : ttsSpeed}
-          disabled={cloneSpeedDisabled}
+          value={fixedSpeed ? 1 : ttsSpeed}
+          disabled={fixedSpeed}
           onChange={(event) => setTTSSpeed(Number(event.target.value))}
           className="w-full disabled:cursor-not-allowed disabled:opacity-50"
         />
