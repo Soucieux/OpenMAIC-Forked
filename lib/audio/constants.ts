@@ -119,24 +119,6 @@ export function resolveTTSModelForVoice(
 }
 
 export const TTS_PROVIDERS: Record<BuiltInTTSProviderId, TTSProviderConfig> = {
-  [LOCAL_TTS.id]: {
-    id: LOCAL_TTS.id,
-    name: LOCAL_TTS.name,
-    requiresApiKey: false,
-    defaultBaseUrl: LOCAL_TTS.baseUrl,
-    models: [{ id: LOCAL_TTS.model, name: LOCAL_TTS.modelName }],
-    defaultModelId: LOCAL_TTS.model,
-    voices: [
-      {
-        id: LOCAL_TTS.voice,
-        name: LOCAL_TTS.voiceName,
-        language: LOCAL_TTS.language,
-        description: LOCAL_TTS.voiceDescription,
-      },
-    ],
-    supportedFormats: [LOCAL_TTS.wav],
-    speedRange: { min: 1, max: 1, default: 1 },
-  },
   'openai-tts': {
     id: 'openai-tts',
     name: 'OpenAI TTS',
@@ -1086,6 +1068,26 @@ export const TTS_PROVIDERS: Record<BuiltInTTSProviderId, TTSProviderConfig> = {
     ],
     supportedFormats: ['wav'],
     speedRange: { min: 0.25, max: 4.0, default: 1.0 },
+  },
+  // Local providers stay after the hosted ones: this key order is the canonical order the
+  // voice fallback walks, and a local server that is not running must not win that pick.
+  [LOCAL_TTS.id]: {
+    id: LOCAL_TTS.id,
+    name: LOCAL_TTS.name,
+    requiresApiKey: false,
+    defaultBaseUrl: LOCAL_TTS.baseUrl,
+    models: [{ id: LOCAL_TTS.model, name: LOCAL_TTS.modelName }],
+    defaultModelId: LOCAL_TTS.model,
+    voices: [
+      {
+        id: LOCAL_TTS.voice,
+        name: LOCAL_TTS.voiceName,
+        language: LOCAL_TTS.language,
+        description: LOCAL_TTS.voiceDescription,
+      },
+    ],
+    supportedFormats: [LOCAL_TTS.wav],
+    speedRange: { min: 1, max: 1, default: 1 },
   },
 };
 
