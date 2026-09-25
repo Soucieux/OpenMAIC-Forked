@@ -71,8 +71,10 @@ jobs:
           node-version: 22
           cache: pnpm
 
+      # Versions matter only where the packages are published, so a fork skips
+      # both version gates.
       - name: Package version bumps
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.repository == 'THU-MAIC/OpenMAIC'
         run: node scripts/check-package-version-bumps.mjs "$BASE_SHA"
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -82,7 +84,7 @@ jobs:
       # once, so the previous commit is not the range that needs checking, and
       # publishing requires this run to be green.
       - name: Package version bumps (main push)
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && github.repository == 'THU-MAIC/OpenMAIC'
         run: |
           set -euo pipefail
           base="$BEFORE_SHA"

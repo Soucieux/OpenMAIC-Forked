@@ -81,7 +81,9 @@ function normalizeShell(script: string | undefined): string {
 function assertMainPushVersionGate(workflow: Workflow): void {
   const mainPush = step(workflow, 'check', 'Package version bumps (main push)');
 
-  expect(mainPush.if).toBe("github.event_name == 'push'");
+  expect(mainPush.if).toBe(
+    "github.event_name == 'push' && github.repository == 'THU-MAIC/OpenMAIC'",
+  );
   expect(mainPush.env).toEqual({ BEFORE_SHA: '${{ github.event.before }}' });
   expect(normalizeShell(mainPush.run)).toBe(EXPECTED_MAIN_PUSH_GATE);
 }
@@ -149,7 +151,7 @@ describe('CI video-export workflow contract', () => {
     const pullRequest = step(workflow, 'check', 'Package version bumps');
 
     expect(pullRequest).toMatchObject({
-      if: "github.event_name == 'pull_request'",
+      if: "github.event_name == 'pull_request' && github.repository == 'THU-MAIC/OpenMAIC'",
       run: 'node scripts/check-package-version-bumps.mjs "$BASE_SHA"',
       env: { BASE_SHA: '${{ github.event.pull_request.base.sha }}' },
     });
